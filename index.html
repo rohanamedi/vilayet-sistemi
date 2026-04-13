@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vilayet/İl/Tax Kodlama Sistemi</title>
+    <title>Kodlama Sistemi</title>
     <style>
         * {
             margin: 0;
@@ -23,7 +23,6 @@
             margin: 0 auto;
         }
 
-        /* Başlık ve Navigasyon */
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -74,7 +73,6 @@
             color: #1e3c2c;
         }
 
-        /* Sayfalar */
         .page {
             display: none;
             background: rgba(255,255,255,0.95);
@@ -93,7 +91,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Form Stilleri */
         .form-group {
             margin-bottom: 20px;
         }
@@ -141,26 +138,12 @@
             transform: scale(1.02);
         }
 
-        .btn-warning {
-            background: #ffc107;
-            color: #1e3c2c;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-        }
-
-        .btn-info {
-            background: #17a2b8;
-        }
-
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        /* Tablo Stilleri */
         .table-container {
             overflow-x: auto;
             margin-top: 20px;
@@ -199,7 +182,6 @@
             font-size: 0.8rem;
         }
 
-        /* Filtreler */
         .filters {
             display: flex;
             gap: 15px;
@@ -212,13 +194,11 @@
             min-width: 150px;
         }
 
-        /* Dışa Aktar Butonu */
         .export-btn {
             background: #28a745;
             margin-bottom: 20px;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -252,16 +232,14 @@
                 <input type="text" id="search-input" placeholder="🔍 Arama..." style="width: 200px;">
                 <button id="export-csv" class="export-btn">📥 CSV Dışa Aktar</button>
             </div>
-            <div class="table-container" id="list-table-container">
-                <!-- Tablo dinamik olarak doldurulacak -->
-            </div>
+            <div class="table-container" id="list-table-container"></div>
         </div>
 
         <!-- EKLEME SAYFASI -->
         <div id="add-page" class="page">
             <h2 style="color:#1e3c2c; margin-bottom:20px;">➕ Yeni Kayıt Ekle</h2>
             
-            <!-- Vilayet Ekleme Formu -->
+            <!-- Vilayet Ekleme -->
             <div style="background:#e8f5e9; padding:20px; border-radius:15px; margin-bottom:25px;">
                 <h3>🏛️ Yeni Vilayet (Eyalet) Ekle</h3>
                 <div class="form-row">
@@ -281,7 +259,7 @@
                 <button id="add-vilayet-btn">🏛️ Vilayet Ekle</button>
             </div>
 
-            <!-- İl Ekleme Formu -->
+            <!-- İl Ekleme -->
             <div style="background:#fff3e0; padding:20px; border-radius:15px; margin-bottom:25px;">
                 <h3>🏙️ Yeni İl Ekle</h3>
                 <div class="form-row">
@@ -298,7 +276,7 @@
                 <small style="display:block; margin-top:10px; color:#666;">✅ İl adına göre 3 harflik otomatik kod atanır. Çakışma varsa son harf değiştirilir.</small>
             </div>
 
-            <!-- Tax Ekleme Formu -->
+            <!-- Tax Ekleme -->
             <div style="background:#e3f2fd; padding:20px; border-radius:15px;">
                 <h3>🏘️ Yeni Tax (Mahalle) Ekle</h3>
                 <div class="form-row">
@@ -308,7 +286,9 @@
                     </div>
                     <div class="form-group">
                         <label>Bağlı İl</label>
-                        <select id="tax-il-select"></select>
+                        <select id="tax-il-select" disabled>
+                            <option value="">Önce vilayet seçin</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group">
@@ -327,29 +307,22 @@
         let ills = JSON.parse(localStorage.getItem('ills')) || [];
         let taxes = JSON.parse(localStorage.getItem('taxes')) || [];
 
-        // Yardımcı Fonksiyonlar
         function saveToLocalStorage() {
             localStorage.setItem('vilayets', JSON.stringify(vilayets));
             localStorage.setItem('ills', JSON.stringify(ills));
             localStorage.setItem('taxes', JSON.stringify(taxes));
         }
 
-        // Türkçe karakter düzeltme ve sessiz harf bulma
         function normalizeText(text) {
             const map = {
-                'Ç': 'C', 'ç': 'C',
-                'Ğ': 'G', 'ğ': 'G',
-                'İ': 'I', 'i': 'I',
-                'Ö': 'O', 'ö': 'O',
-                'Ş': 'S', 'ş': 'S',
-                'Ü': 'U', 'ü': 'U',
-                'Â': 'A', 'â': 'A',
-                'Û': 'U', 'û': 'U'
+                'Ç': 'C', 'ç': 'C', 'Ğ': 'G', 'ğ': 'G',
+                'İ': 'I', 'i': 'I', 'Ö': 'O', 'ö': 'O',
+                'Ş': 'S', 'ş': 'S', 'Ü': 'U', 'ü': 'U',
+                'Â': 'A', 'â': 'A', 'Û': 'U', 'û': 'U'
             };
             return text.toUpperCase().split('').map(char => map[char] || char).join('');
         }
 
-        // İl için 3 harflik benzersiz kod üret
         function generateIlCode(ilName, vilayetId) {
             let normalized = normalizeText(ilName);
             let consonants = normalized.split('').filter(c => !'AEIOU'.includes(c));
@@ -366,7 +339,6 @@
                 while(baseCode.length < 3) baseCode += 'X';
             }
 
-            // Aynı vilayet içinde benzersiz yap
             let existingCodes = ills.filter(i => i.vilayetId === vilayetId).map(i => i.code);
             let finalCode = baseCode;
             let counter = 1;
@@ -379,11 +351,9 @@
                 counter++;
                 if (counter > 26) break;
             }
-            
             return finalCode;
         }
 
-        // Tax için 2 harflik kod üret
         function generateTaxCode(taxName) {
             let normalized = normalizeText(taxName);
             let consonants = normalized.split('').filter(c => !'AEIOU'.includes(c));
@@ -397,8 +367,8 @@
             }
         }
 
-        // Dropdownları güncelle
         function updateDropdowns() {
+            // Vilayet dropdown'ları
             const vilayetSelects = ['il-vilayet-select', 'tax-vilayet-select'];
             vilayetSelects.forEach(id => {
                 const select = document.getElementById(id);
@@ -408,17 +378,30 @@
                 }
             });
 
-            // İl dropdown (tax için)
-            const vilayetId = document.getElementById('tax-vilayet-select')?.value;
-            const ilSelect = document.getElementById('tax-il-select');
-            if (ilSelect && vilayetId) {
-                const filtered = ills.filter(i => i.vilayetId == vilayetId);
-                ilSelect.innerHTML = '<option value="">-- İl Seç --</option>' + 
-                    filtered.map(i => `<option value="${i.id}">${i.name} (${i.code})</option>`).join('');
+            // Tax il dropdown - seçili vilayete göre doldur
+            const taxVilayetSelect = document.getElementById('tax-vilayet-select');
+            const taxIlSelect = document.getElementById('tax-il-select');
+            
+            if (taxVilayetSelect && taxIlSelect) {
+                const selectedVilayetId = taxVilayetSelect.value;
+                
+                if (selectedVilayetId) {
+                    const filteredIller = ills.filter(i => i.vilayetId == selectedVilayetId);
+                    if (filteredIller.length > 0) {
+                        taxIlSelect.innerHTML = '<option value="">-- İl Seç --</option>' + 
+                            filteredIller.map(i => `<option value="${i.id}">${i.name} (${i.code})</option>`).join('');
+                        taxIlSelect.disabled = false;
+                    } else {
+                        taxIlSelect.innerHTML = '<option value="">Bu vilayette henüz il yok</option>';
+                        taxIlSelect.disabled = true;
+                    }
+                } else {
+                    taxIlSelect.innerHTML = '<option value="">Önce vilayet seçin</option>';
+                    taxIlSelect.disabled = true;
+                }
             }
         }
 
-        // Listeleme Tablosu
         function renderList() {
             const type = document.getElementById('list-type').value;
             const search = document.getElementById('search-input').value.toLowerCase();
@@ -428,9 +411,7 @@
                 let filtered = vilayets.filter(v => v.name.toLowerCase().includes(search) || v.code.includes(search));
                 container.innerHTML = `
                     <table>
-                        <thead>
-                            <tr><th>ID</th><th>Vilayet Adı</th><th>Kod</th><th>Açıklama</th><th>İşlemler</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>Vilayet Adı</th><th>Kod</th><th>Açıklama</th><th>İşlemler</th></tr></thead>
                         <tbody>
                             ${filtered.map(v => `
                                 <tr>
@@ -439,7 +420,6 @@
                                     <td>🏛️ ${v.code}</td>
                                     <td>${v.description || '-'}</td>
                                     <td class="action-buttons">
-                                        <button class="edit-vilayet" data-id="${v.id}">✏️</button>
                                         <button class="delete-vilayet" data-id="${v.id}">🗑️</button>
                                     </td>
                                 </tr>
@@ -462,7 +442,6 @@
                                     <td><strong>${i.name}</strong></td>
                                     <td>🏙️ ${i.code}</td>
                                     <td class="action-buttons">
-                                        <button class="edit-il" data-id="${i.id}">✏️</button>
                                         <button class="delete-il" data-id="${i.id}">🗑️</button>
                                     </td>
                                 </tr>
@@ -490,7 +469,6 @@
                                     <td><strong>${t.name}</strong></td>
                                     <td>🏘️ ${t.code}</td>
                                     <td class="action-buttons">
-                                        <button class="edit-tax" data-id="${t.id}">✏️</button>
                                         <button class="delete-tax" data-id="${t.id}">🗑️</button>
                                     </td>
                                 </tr>
@@ -500,7 +478,7 @@
                 `;
             }
 
-            // Silme/Düzenleme eventleri
+            // Silme eventleri
             document.querySelectorAll('.delete-vilayet').forEach(btn => {
                 btn.onclick = () => {
                     if(confirm('Vilayet ve bağlı tüm iller/taxlar silinecek!')) {
@@ -540,7 +518,6 @@
             });
         }
 
-        // CSV Dışa Aktar
         function exportToCSV() {
             const type = document.getElementById('list-type').value;
             let data = [];
@@ -572,7 +549,6 @@
             link.click();
         }
 
-        // Sayfa değiştirme
         function initNavigation() {
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.onclick = () => {
@@ -586,7 +562,6 @@
             });
         }
 
-        // Ekleme İşlemleri
         function initAddButtons() {
             document.getElementById('add-vilayet-btn').onclick = () => {
                 let name = document.getElementById('vilayet-name').value.trim();
@@ -629,14 +604,11 @@
                 alert(`Tax eklendi! Kod: ${code}`);
             };
             
+            // Vilayet değiştiğinde il dropdown'ını güncelle
             document.getElementById('tax-vilayet-select').onchange = () => updateDropdowns();
         }
 
-        // Event Listeners
-        document.getElementById('list-type').onchange = () => renderList();
-        document.getElementById('search-input').oninput = () => renderList();
-        document.getElementById('export-csv').onclick = () => exportToCSV();
-        
+        // Başlat
         initNavigation();
         initAddButtons();
         updateDropdowns();

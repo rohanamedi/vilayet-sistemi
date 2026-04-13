@@ -187,6 +187,7 @@
             gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .filters select, .filters input {
@@ -194,9 +195,65 @@
             min-width: 150px;
         }
 
+        /* Gizli export butonu - sadece şifre girilince görünür */
         .export-btn {
             background: #28a745;
-            margin-bottom: 20px;
+            display: none;
+        }
+
+        .export-btn.visible {
+            display: inline-block;
+        }
+
+        .secret-area {
+            font-size: 10px;
+            color: #ccc;
+            cursor: pointer;
+            user-select: none;
+            margin-left: 10px;
+        }
+
+        .secret-area:hover {
+            color: #ffd700;
+        }
+
+        /* Şifre modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content input {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .error-msg {
+            color: red;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -231,6 +288,7 @@
                 </select>
                 <input type="text" id="search-input" placeholder="🔍 Arama..." style="width: 200px;">
                 <button id="export-csv" class="export-btn">📥 CSV Dışa Aktar</button>
+                <span class="secret-area" title="Yönetici alanı (çift tıkla)">🔒</span>
             </div>
             <div class="table-container" id="list-table-container"></div>
         </div>
@@ -303,7 +361,22 @@
         </div>
     </div>
 
+    <!-- Şifre Modal -->
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <h3>🔐 Yönetici Doğrulaması</h3>
+            <p>CSV dışa aktarmak için şifre girin:</p>
+            <input type="password" id="admin-password" placeholder="Şifre">
+            <button id="verify-password">Doğrula</button>
+            <div id="error-msg" class="error-msg">❌ Şifre yanlış!</div>
+        </div>
+    </div>
+
     <script>
+        // ==================== KONFİGÜRASYON ====================
+        const ADMIN_PASSWORD = "platon"; // İstediğin şifreyi buraya yaz
+        // ======================================================
+
         // Veri Yapıları
         let vilayets = JSON.parse(localStorage.getItem('vilayets')) || [];
         let ills = JSON.parse(localStorage.getItem('ills')) || [];
@@ -323,6 +396,26 @@
                 'Â': 'A', 'â': 'A', 'Û': 'U', 'û': 'U'
             };
             return text.toUpperCase().split('').map(char => map[char] || char).join('');
+        }
+
+        // Vilayet kodunu al (2 haneli)
+        function getVilayetCode(vilayetId) {
+            const vilayet = vilayets.find(v => v.id == vilayetId);
+            return vilayet ? vilayet.code : '??';
+        }
+
+        // İl için TAM KOD: "01 AMD"
+        function getIlFullCode(il) {
+            const vilayetCode = getVilayetCode(il.vilayetId);
+            return `${vilayetCode} ${il.code}`;
+        }
+
+        // Tax için TAM KOD: "01 AMD-BG"
+        function getTaxFullCode(tax) {
+            const vilayetCode = getVilayetCode(tax.vilayetId);
+            const il = ills.find(i => i.id == tax.ilId);
+            const ilCode = il ? il.code : '???';
+            return `${vilayetCode} ${ilCode}-${tax.code}`;
         }
 
         function generateIlCode(ilName, vilayetId) {
@@ -369,7 +462,6 @@
             }
         }
 
-        // İl dropdown'ını güncelle (sadece tax için)
         function updateIlDropdown() {
             const taxVilayetSelect = document.getElementById('tax-vilayet-select');
             const taxIlSelect = document.getElementById('tax-il-select');
@@ -382,7 +474,7 @@
                 const filteredIller = ills.filter(i => i.vilayetId == selectedVilayetId);
                 if (filteredIller.length > 0) {
                     taxIlSelect.innerHTML = '<option value="">-- İl Seç --</option>' + 
-                        filteredIller.map(i => `<option value="${i.id}">${i.name} (${i.code})</option>`).join('');
+                        filteredIller.map(i => `<option value="${i.id}">${i.name} (${getIlFullCode(i)})</option>`).join('');
                     taxIlSelect.disabled = false;
                 } else {
                     taxIlSelect.innerHTML = '<option value="">Bu vilayette henüz il yok</option>';
@@ -394,36 +486,30 @@
             }
         }
 
-        // Tüm dropdownları güncelle (vilayet listeleri)
         function updateVilayetDropdowns() {
             const vilayetSelects = ['il-vilayet-select', 'tax-vilayet-select'];
             const currentValues = {};
             
-            // Mevcut seçili değerleri sakla
             vilayetSelects.forEach(id => {
                 const select = document.getElementById(id);
                 if (select) currentValues[id] = select.value;
             });
             
-            // Vilayet dropdownlarını yeniden doldur
             vilayetSelects.forEach(id => {
                 const select = document.getElementById(id);
                 if (select) {
                     select.innerHTML = '<option value="">-- Vilayet Seç --</option>' + 
                         vilayets.map(v => `<option value="${v.id}">${v.name} (${v.code})</option>`).join('');
                     
-                    // Önceki seçili değeri geri yükle
                     if (currentValues[id] && vilayets.some(v => v.id == currentValues[id])) {
                         select.value = currentValues[id];
                     }
                 }
             });
             
-            // Tax il dropdown'ını güncelle
             updateIlDropdown();
         }
 
-        // Tüm UI'ı güncelle
         function refreshUI() {
             updateVilayetDropdowns();
             renderList();
@@ -459,7 +545,7 @@
             } 
             else if (type === 'il') {
                 let filtered = ills.filter(i => i.name.toLowerCase().includes(search) || i.code.includes(search));
-                filtered = filtered.map(i => ({...i, vilayetName: vilayets.find(v => v.id == i.vilayetId)?.name || '?'}));
+                filtered = filtered.map(i => ({...i, vilayetName: vilayets.find(v => v.id == i.vilayetId)?.name || '?', fullCode: getIlFullCode(i)}));
                 container.innerHTML = `
                     <table>
                         <thead>
@@ -471,7 +557,7 @@
                                     <td>${i.id}</td>
                                     <td>🏛️ ${i.vilayetName}</td>
                                     <td><strong>${i.name}</strong></td>
-                                    <td>🏙️ ${i.code}</td>
+                                    <td>🏙️ ${i.fullCode}</td>
                                     <td class="action-buttons">
                                         <button class="delete-il" data-id="${i.id}">🗑️</button>
                                     </td>
@@ -486,7 +572,8 @@
                 filtered = filtered.map(t => ({
                     ...t,
                     vilayetName: vilayets.find(v => v.id == t.vilayetId)?.name || '?',
-                    ilName: ills.find(i => i.id == t.ilId)?.name || '?'
+                    ilName: ills.find(i => i.id == t.ilId)?.name || '?',
+                    fullCode: getTaxFullCode(t)
                 }));
                 container.innerHTML = `
                     <table>
@@ -500,7 +587,7 @@
                                     <td>🏛️ ${t.vilayetName}</td>
                                     <td>🏙️ ${t.ilName}</td>
                                     <td><strong>${t.name}</strong></td>
-                                    <td>🏘️ ${t.code}</td>
+                                    <td>🏘️ ${t.fullCode}</td>
                                     <td class="action-buttons">
                                         <button class="delete-tax" data-id="${t.id}">🗑️</button>
                                     </td>
@@ -558,26 +645,47 @@
                 headers = ['ID', 'Vilayet Adı', 'Kod', 'Açıklama'];
                 data = vilayets.map(v => [v.id, v.name, v.code, v.description]);
             } else if (type === 'il') {
-                headers = ['ID', 'Vilayet', 'İl Adı', 'Kod'];
+                headers = ['ID', 'Vilayet', 'İl Adı', 'Tam Kod'];
                 data = ills.map(i => {
                     let vName = vilayets.find(v => v.id == i.vilayetId)?.name || '';
-                    return [i.id, vName, i.name, i.code];
+                    return [i.id, vName, i.name, getIlFullCode(i)];
                 });
             } else {
-                headers = ['ID', 'Vilayet', 'İl', 'Tax Adı', 'Kod'];
+                headers = ['ID', 'Vilayet', 'İl', 'Tax Adı', 'Tam Kod'];
                 data = taxes.map(t => {
                     let vName = vilayets.find(v => v.id == t.vilayetId)?.name || '';
                     let iName = ills.find(i => i.id == t.ilId)?.name || '';
-                    return [t.id, vName, iName, t.name, t.code];
+                    return [t.id, vName, iName, t.name, getTaxFullCode(t)];
                 });
             }
             
             let csvContent = headers.join(',') + '\n' + data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             let link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `hayali_ulke_${type}.csv`;
             link.click();
+        }
+
+        // Şifre Modal Kontrolleri
+        function showPasswordModal() {
+            document.getElementById('password-modal').classList.add('active');
+            document.getElementById('admin-password').value = '';
+            document.getElementById('error-msg').style.display = 'none';
+        }
+
+        function hidePasswordModal() {
+            document.getElementById('password-modal').classList.remove('active');
+        }
+
+        function verifyPassword() {
+            const password = document.getElementById('admin-password').value;
+            if (password === ADMIN_PASSWORD) {
+                hidePasswordModal();
+                exportToCSV();
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
         }
 
         function initNavigation() {
@@ -635,13 +743,42 @@
                 alert(`Tax eklendi! Kod: ${code}`);
             };
             
-            // Vilayet değiştiğinde il dropdown'ını güncelle
             document.getElementById('tax-vilayet-select').onchange = () => updateIlDropdown();
+        }
+
+        // Gizli export butonu - sadece şifre doğrulaması ile görünür
+        function initSecretExport() {
+            const secretArea = document.querySelector('.secret-area');
+            const exportBtn = document.getElementById('export-csv');
+            
+            // Çift tıklama ile şifre modalını aç
+            secretArea.ondblclick = () => {
+                showPasswordModal();
+            };
+            
+            // Export butonuna tıklanınca direkt şifre sor
+            exportBtn.onclick = () => {
+                showPasswordModal();
+            };
+            
+            // Modal butonları
+            document.getElementById('verify-password').onclick = verifyPassword;
+            document.getElementById('password-modal').onclick = (e) => {
+                if (e.target === document.getElementById('password-modal')) {
+                    hidePasswordModal();
+                }
+            };
+            
+            // Enter tuşu ile doğrulama
+            document.getElementById('admin-password').onkeypress = (e) => {
+                if (e.key === 'Enter') verifyPassword();
+            };
         }
 
         // Başlat
         initNavigation();
         initAddButtons();
+        initSecretExport();
         refreshUI();
     </script>
 </body>

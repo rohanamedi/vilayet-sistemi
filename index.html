@@ -213,7 +213,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏛️ SİSTEM</h1>
+            <h1>Kodlama Sistemi</h1>
         </div>
 
         <div class="nav-buttons">
@@ -282,7 +282,9 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Bağlı Vilayet</label>
-                        <select id="tax-vilayet-select"></select>
+                        <select id="tax-vilayet-select">
+                            <option value="">-- Vilayet Seç --</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Bağlı İl</label>
@@ -367,39 +369,64 @@
             }
         }
 
-        function updateDropdowns() {
-            // Vilayet dropdown'ları
+        // İl dropdown'ını güncelle (sadece tax için)
+        function updateIlDropdown() {
+            const taxVilayetSelect = document.getElementById('tax-vilayet-select');
+            const taxIlSelect = document.getElementById('tax-il-select');
+            
+            if (!taxVilayetSelect || !taxIlSelect) return;
+            
+            const selectedVilayetId = taxVilayetSelect.value;
+            
+            if (selectedVilayetId) {
+                const filteredIller = ills.filter(i => i.vilayetId == selectedVilayetId);
+                if (filteredIller.length > 0) {
+                    taxIlSelect.innerHTML = '<option value="">-- İl Seç --</option>' + 
+                        filteredIller.map(i => `<option value="${i.id}">${i.name} (${i.code})</option>`).join('');
+                    taxIlSelect.disabled = false;
+                } else {
+                    taxIlSelect.innerHTML = '<option value="">Bu vilayette henüz il yok</option>';
+                    taxIlSelect.disabled = true;
+                }
+            } else {
+                taxIlSelect.innerHTML = '<option value="">Önce vilayet seçin</option>';
+                taxIlSelect.disabled = true;
+            }
+        }
+
+        // Tüm dropdownları güncelle (vilayet listeleri)
+        function updateVilayetDropdowns() {
             const vilayetSelects = ['il-vilayet-select', 'tax-vilayet-select'];
+            const currentValues = {};
+            
+            // Mevcut seçili değerleri sakla
+            vilayetSelects.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) currentValues[id] = select.value;
+            });
+            
+            // Vilayet dropdownlarını yeniden doldur
             vilayetSelects.forEach(id => {
                 const select = document.getElementById(id);
                 if (select) {
                     select.innerHTML = '<option value="">-- Vilayet Seç --</option>' + 
                         vilayets.map(v => `<option value="${v.id}">${v.name} (${v.code})</option>`).join('');
+                    
+                    // Önceki seçili değeri geri yükle
+                    if (currentValues[id] && vilayets.some(v => v.id == currentValues[id])) {
+                        select.value = currentValues[id];
+                    }
                 }
             });
-
-            // Tax il dropdown - seçili vilayete göre doldur
-            const taxVilayetSelect = document.getElementById('tax-vilayet-select');
-            const taxIlSelect = document.getElementById('tax-il-select');
             
-            if (taxVilayetSelect && taxIlSelect) {
-                const selectedVilayetId = taxVilayetSelect.value;
-                
-                if (selectedVilayetId) {
-                    const filteredIller = ills.filter(i => i.vilayetId == selectedVilayetId);
-                    if (filteredIller.length > 0) {
-                        taxIlSelect.innerHTML = '<option value="">-- İl Seç --</option>' + 
-                            filteredIller.map(i => `<option value="${i.id}">${i.name} (${i.code})</option>`).join('');
-                        taxIlSelect.disabled = false;
-                    } else {
-                        taxIlSelect.innerHTML = '<option value="">Bu vilayette henüz il yok</option>';
-                        taxIlSelect.disabled = true;
-                    }
-                } else {
-                    taxIlSelect.innerHTML = '<option value="">Önce vilayet seçin</option>';
-                    taxIlSelect.disabled = true;
-                }
-            }
+            // Tax il dropdown'ını güncelle
+            updateIlDropdown();
+        }
+
+        // Tüm UI'ı güncelle
+        function refreshUI() {
+            updateVilayetDropdowns();
+            renderList();
         }
 
         function renderList() {
@@ -411,7 +438,9 @@
                 let filtered = vilayets.filter(v => v.name.toLowerCase().includes(search) || v.code.includes(search));
                 container.innerHTML = `
                     <table>
-                        <thead><tr><th>ID</th><th>Vilayet Adı</th><th>Kod</th><th>Açıklama</th><th>İşlemler</th></tr></thead>
+                        <thead>
+                            <tr><th>ID</th><th>Vilayet Adı</th><th>Kod</th><th>Açıklama</th><th>İşlemler</th></tr>
+                        </thead>
                         <tbody>
                             ${filtered.map(v => `
                                 <tr>
@@ -433,7 +462,9 @@
                 filtered = filtered.map(i => ({...i, vilayetName: vilayets.find(v => v.id == i.vilayetId)?.name || '?'}));
                 container.innerHTML = `
                     <table>
-                        <thead><tr><th>ID</th><th>Vilayet</th><th>İl Adı</th><th>Kod</th><th>İşlemler</th></tr></thead>
+                        <thead>
+                            <tr><th>ID</th><th>Vilayet</th><th>İl Adı</th><th>Kod</th><th>İşlemler</th></tr>
+                        </thead>
                         <tbody>
                             ${filtered.map(i => `
                                 <tr>
@@ -459,7 +490,9 @@
                 }));
                 container.innerHTML = `
                     <table>
-                        <thead><tr><th>ID</th><th>Vilayet</th><th>İl</th><th>Tax Adı</th><th>Kod</th><th>İşlemler</th></tr></thead>
+                        <thead>
+                            <tr><th>ID</th><th>Vilayet</th><th>İl</th><th>Tax Adı</th><th>Kod</th><th>İşlemler</th></tr>
+                        </thead>
                         <tbody>
                             ${filtered.map(t => `
                                 <tr>
@@ -487,8 +520,7 @@
                         ills = ills.filter(i => i.vilayetId !== id);
                         taxes = taxes.filter(t => t.vilayetId !== id);
                         saveToLocalStorage();
-                        renderList();
-                        updateDropdowns();
+                        refreshUI();
                     }
                 };
             });
@@ -500,8 +532,7 @@
                         ills = ills.filter(i => i.id !== id);
                         taxes = taxes.filter(t => t.ilId !== id);
                         saveToLocalStorage();
-                        renderList();
-                        updateDropdowns();
+                        refreshUI();
                     }
                 };
             });
@@ -557,7 +588,7 @@
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     document.getElementById(`${btn.dataset.page}-page`).classList.add('active');
                     if (btn.dataset.page === 'list') renderList();
-                    else updateDropdowns();
+                    else refreshUI();
                 };
             });
         }
@@ -571,7 +602,7 @@
                 let newId = Date.now();
                 vilayets.push({ id: newId, name, code, description: desc });
                 saveToLocalStorage();
-                updateDropdowns();
+                refreshUI();
                 document.getElementById('vilayet-name').value = '';
                 document.getElementById('vilayet-code').value = '';
                 document.getElementById('vilayet-desc').value = '';
@@ -586,7 +617,7 @@
                 let newId = Date.now();
                 ills.push({ id: newId, vilayetId: parseInt(vilayetId), name, code });
                 saveToLocalStorage();
-                updateDropdowns();
+                refreshUI();
                 document.getElementById('il-name').value = '';
                 alert(`İl eklendi! Kod: ${code}`);
             };
@@ -605,14 +636,13 @@
             };
             
             // Vilayet değiştiğinde il dropdown'ını güncelle
-            document.getElementById('tax-vilayet-select').onchange = () => updateDropdowns();
+            document.getElementById('tax-vilayet-select').onchange = () => updateIlDropdown();
         }
 
         // Başlat
         initNavigation();
         initAddButtons();
-        updateDropdowns();
-        renderList();
+        refreshUI();
     </script>
 </body>
 </html>

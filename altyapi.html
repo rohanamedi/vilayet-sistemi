@@ -3,459 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lojistik Altyapı ve Tesis Yönetimi - Vilayet/İl Bazlı</title>
+    <title>Lojistik Altyapı & Tesis Yönetimi – 26 Vilayet Sistemi</title>
     <style>
         * {
             box-sizing: border-box;
             font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
         }
         body {
-            background: #f0f4f8;
+            background: #eef2f7;
             margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 1400px;
+            max-width: 1500px;
             margin: 0 auto;
         }
         header {
-            background: #1e3a5f;
+            background: #0b2b3d;
             color: white;
             padding: 1rem 2rem;
-            border-radius: 20px;
+            border-radius: 28px;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
         }
         h1 {
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.9rem;
         }
         .sub {
             opacity: 0.8;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
-        .controls {
+        .filter-bar {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 24px;
             background: white;
             padding: 16px 20px;
-            border-radius: 28px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-radius: 48px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .filter-btn {
             background: #e2e8f0;
             border: none;
-            padding: 8px 18px;
+            padding: 8px 20px;
             border-radius: 40px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
+            font-size: 0.85rem;
         }
         .filter-btn.active {
-            background: #1e3a5f;
+            background: #1e4a6e;
             color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
         .stats {
             background: #cbd5e1;
-            padding: 8px 16px;
-            border-radius: 28px;
-            font-size: 0.85rem;
+            padding: 6px 18px;
+            border-radius: 32px;
+            font-size: 0.8rem;
             font-weight: 500;
+            margin-left: auto;
         }
-        .region-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
+        .vilayet-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
-        .card {
+        .vilayet-card {
             background: white;
-            border-radius: 28px;
+            border-radius: 32px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            transition: transform 0.1s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
-        .card-header {
-            background: #2c3e66;
+        .vilayet-title {
+            background: #1f4e6e;
             color: white;
-            padding: 14px 18px;
+            padding: 14px 24px;
+            font-size: 1.5rem;
+            font-weight: bold;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            font-weight: bold;
         }
-        .card-header h3 {
-            margin: 0;
-            font-size: 1.2rem;
+        .il-listesi {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+            padding: 20px;
+            background: #f9fbfd;
         }
-        .badge-code {
-            background: #ffb347;
-            color: #2d2b1f;
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: bold;
+        .il-card {
+            background: white;
+            border-radius: 24px;
+            border: 1px solid #e2edf7;
+            padding: 14px;
+            transition: 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .card-body {
-            padding: 16px;
+        .il-header {
+            font-weight: 800;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #ffb74d;
+            display: inline-block;
+            margin-bottom: 12px;
+            padding-right: 8px;
         }
-        .facility-list {
+        .tesis-list {
             list-style: none;
             padding: 0;
-            margin: 0 0 16px 0;
-            max-height: 240px;
+            margin: 12px 0;
+            max-height: 180px;
             overflow-y: auto;
-        }
-        .facility-item {
-            background: #f8fafc;
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            border-radius: 18px;
-            border-left: 5px solid;
-            font-size: 0.85rem;
-        }
-        .facility-cat {
-            font-weight: 700;
-            display: inline-block;
-            background: #e2e8f0;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            margin-right: 8px;
-        }
-        .add-facility {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        .add-facility input, .add-facility select, .add-facility textarea {
-            padding: 8px 12px;
-            border-radius: 40px;
-            border: 1px solid #cbd5e1;
             font-size: 0.8rem;
         }
+        .tesis-item {
+            background: #f1f5f9;
+            margin-bottom: 6px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            border-left: 4px solid;
+        }
+        .cat-badge {
+            font-weight: 700;
+            background: #e4e9f2;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .add-form {
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .add-form input, .add-form select, .add-form textarea {
+            padding: 6px 10px;
+            border-radius: 28px;
+            border: 1px solid #cbd5e6;
+            font-size: 0.75rem;
+        }
         button {
-            background: #1e3a5f;
+            background: #2c6e9e;
             color: white;
             border: none;
             padding: 6px 12px;
-            border-radius: 32px;
+            border-radius: 28px;
             font-weight: 600;
             cursor: pointer;
+            font-size: 0.75rem;
         }
-        button.small {
-            background: #475569;
-            font-size: 0.7rem;
-        }
-        .empty-msg {
-            color: #6c757d;
-            font-style: italic;
-            padding: 8px;
+        button.small-danger {
+            background: #9e2c2c;
+            margin-left: 8px;
         }
         footer {
             text-align: center;
             margin-top: 40px;
-            font-size: 0.8rem;
-            color: #4b5563;
+            font-size: 0.75rem;
+            color: #4a627a;
         }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            background: white;
-            border-radius: 48px;
+        .empty-msg {
+            color: #6c7a8e;
+            font-style: italic;
+            padding: 6px 0;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>🏭 Lojistik Altyapı & Tesis Yönetimi</h1>
-        <div class="sub">Vilayet / İl bazında okul, hastane, askeri tesis, baraj, enerji, arıtma, eczane deposu ve daha fazlası</div>
+        <h1>🏭 26 VİLAYET – Lojistik & Altyapı Tesis Sistemi</h1>
+        <div class="sub">Hastane, Ecza Deposu, Askeri Tesis, Üniversite, Baraj, Arıtma, Enerji, Lojistik Köy, OSB, Adliye ve daha fazlası</div>
     </header>
 
-    <div class="controls">
-        <button class="filter-btn active" data-cat="all">🏁 Tümü</button>
-        <button class="filter-btn" data-cat="Askeri">⚔️ Askeri (Kışla, Karargah, Tugay, Karakol)</button>
-        <button class="filter-btn" data-cat="Sağlık">🏥 Sağlık (Hastane, Eczane Deposu)</button>
-        <button class="filter-btn" data-cat="Eğitim">📚 Eğitim (Okul)</button>
-        <button class="filter-btn" data-cat="Üniversite">🎓 Üniversite</button>
-        <button class="filter-btn" data-cat="Lojistik Altyapı">⚡ Baraj / Elektrik Tesisi / Arıtma</button>
+    <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" data-cat="all">🏁 TÜM TESİSLER</button>
+        <button class="filter-btn" data-cat="Askeri">⚔️ SAVUNMA & GÜVENLİK</button>
+        <button class="filter-btn" data-cat="Sağlık">🏥 SAĞLIK & TIBBI ALTYAPI</button>
+        <button class="filter-btn" data-cat="Eğitim">📚 EĞİTİM & AKADEMİ</button>
+        <button class="filter-btn" data-cat="Üniversite">🎓 ÜNİVERSİTE</button>
+        <button class="filter-btn" data-cat="Enerji">💧 SU & ENERJİ & ÇEVRE</button>
+        <button class="filter-btn" data-cat="Lojistik">🚛 LOJİSTİK & ULAŞIM</button>
+        <button class="filter-btn" data-cat="Kamu">🏢 KAMU & SANAYİ & SOSYAL</button>
         <div class="stats" id="statsPanel">Yükleniyor...</div>
     </div>
 
-    <div id="regionContainer" class="region-grid">⏳ Veriler çekiliyor...</div>
-    <footer>📌 Not: Vilayet/İller otomatik çekilir. Eklediğiniz tesisler tarayıcınızda saklanır (IndexedDB).</footer>
+    <div id="vilayetContainer" class="vilayet-grid">Veriler hazırlanıyor...</div>
+    <footer>📌 Not: Eklediğiniz tüm tesisler tarayıcınızda IndexedDB ile saklanır. Vilayet/il listesi sabit (26 vilayet).</footer>
 </div>
 
 <script>
-    (function() {
-        // ---------- IndexedDB Tanımı ----------
-        const DB_NAME = 'LojistikDB';
-        const DB_VERSION = 1;
-        let db = null;
-        let currentFilter = 'all';
+    // --------------------------------------------------------------
+    // 1. TANIMLANAN 26 VİLAYET VE BAĞLI İLLER (SİZİN VERDİĞİNİZ LİSTE)
+    // --------------------------------------------------------------
+    const VILAYET_LISTESI = [
+        { id: "vil1", ad: "ADIYAMAN VİLAYETİ", iller: ["Adıyaman","Maraş","Malatya","Hekimhan","Afşin","Elbistan"] },
+        { id: "vil2", ad: "AGİRÎ VİLAYETİ", iller: ["Ağrı","Patnos","Doğubeyazıt","Iğdır","Diyadin","Tutak","Tuzluca","Aralık"] },
+        { id: "vil3", ad: "ANTEP VİLAYETİ", iller: ["ANTEP","İSKENDERUN","ANTAKYA","AFRİN","ÇOBANBEY","NURDAĞI","Nizip","Cerablus","Yavuzeli","Islahiye","Erzin"] },
+        { id: "vil4", ad: "AMED VİLAYETİ", iller: ["AMED","MARDİN","BATMAN","BİSMİL","Silvan","Lice","Dicle","Ergani","Genç","Gercüş","Midyat"] },
+        { id: "vil5", ad: "BİTLİS VİLAYETİ", iller: ["Bitlis","Malazgirt","Ahlat","Adılcevaz","Tatvan","Muş","Solhan","Karlıova","Güroymak"] },
+        { id: "vil6", ad: "BOTAN VİLAYETİ", iller: ["Cizre","Dargeçit","Silopi","Şırnak","Beytüşşebap","Hakkari","Yüksekova","Şemdinli","Al Malikiye","Amadiye","Siirt"] },
+        { id: "vil7", ad: "CEZİRE VİLAYETİ", iller: ["KIZILTEPE","Amuda","Qamişlo","Tal Hamess","Ass Shaddadi","Hasiçi"] },
+        { id: "vil8", ad: "DERSİM VİLAYETİ", iller: ["Dersim","Elazığ","Erzincan","Zara","Refahiye","Divriği","Bingöl","Tercan","Pülümür"] },
+        { id: "vil9", ad: "DUHOK VİLAYETİ", iller: ["Duhok","Zaxo","Amadiye","Sheladiz"] },
+        { id: "vil10", ad: "ERBİL VİLAYETİ", iller: ["Barzan","Erbil","Soran"] },
+        { id: "vil11", ad: "ERZİROM VİLAYETİ", iller: ["Erzurum","Horasan","Hınıs","Karayazı","Tekman","Aşkale","Çat"] },
+        { id: "vil12", ad: "HAMEDAN VİLAYETİ", iller: ["Hemedan","Malayer","Nahavand","Kebudrahang","Bahar","Esedabad","Tuyserkan","Razan","Famenin","Dergezin"] },
+        { id: "vil13", ad: "LURİSTAN VİLAYETİ", iller: ["Hürremabad","Borucerd","Dorud","Aligudarz","Nurabad","Pulduhtar"] },
+        { id: "vil14", ad: "HUZİSTAN VİLAYETİ", iller: ["Ahvaz","Dezful","Abadan","Behbehan","Mahşehr","Andimeşk","Hürremşehr","İze","Şiter","Mescid-i Süleyman"] },
+        { id: "vil15", ad: "İLAM VİLAYETİ", iller: ["İlam","Dehloran","Mehran","Abdanan","Çardavol","Melikşahi"] },
+        { id: "vil16", ad: "KARS VİLAYETİ", iller: ["Kars","Sarıkamış","Digor","Arpaçay","Ardaham","Hanak","Kağızman"] },
+        { id: "vil17", ad: "KİRMAŞAN VİLAYETİ", iller: ["Kirmaşan","Kasrı Şirin","Harsin","Glanı garb","İslamabad-ı Garb","Sahneh"] },
+        { id: "vil18", ad: "KERKÜK VİLAYETİ", iller: ["Kerkük","Havice","Dakuk","Dibis"] },
+        { id: "vil19", ad: "MUSUL VİLAYETİ", iller: ["Musul","Şengal","Akre","Hamdaniye","Tilked","Mahmur","Başika"] },
+        { id: "vil20", ad: "NURANİ VİLAYETİ", iller: ["Veysel Karani","Tillo","Şirvan","Pervari","Nurs","Hizan","Baykan","Bahşesaray"] },
+        { id: "vil21", ad: "RİHA VİLAYETİ", iller: ["Riha","Bozova","Hilvan","Siverek","Viranşehir","Ceylanpınar","Akçakale","Suruç","Ayn İssa","Kobanê","Harran"] },
+        { id: "vil22", ad: "SENENDEC VİLAYETİ", iller: ["Senendej","Seqiz","Meriwan","Bane","Qurve","Kamyaran","Divandere","Sevabad"] },
+        { id: "vil23", ad: "SÜLEYMANİYE VİLAYETİ", iller: ["Süleymaniye","Şarezûr","Şarbajer","Xaneqin","Halepçe","Raniye","Kalar","Zarda"] },
+        { id: "vil24", ad: "ŞEHREKURD VİLAYETİ", iller: ["Şehrekürd","Lordegan","Borucen","Farsan","Kias","Ardal","Kuhrang","Saman","Yasuc"] },
+        { id: "vil25", ad: "URMİYE VİLAYETİ", iller: ["Urmiye","Hoy","Mahabad","Piranşehr","Bukan","Salmas","Maku"] },
+        { id: "vil26", ad: "WAN VİLAYETİ", iller: ["Van","Erciş","Muradiye","Başkale","Gevaş","Çaldıran"] }
+    ];
 
-        // Veri modelleri: iller listesi { id, vilayetAd, ilAd, ilKod }
-        let illerListesi = []; 
+    // KATEGORİLER (senin gönderdiğin ana başlıklar – alt kırılımlar select'te görünecek)
+    const KATEGORI_LISTESI = [
+        "Askeri", "Sağlık", "Eğitim", "Üniversite", "Enerji", "Lojistik", "Kamu"
+    ];
+    // Daha detaylı görünüm için select içinde kullanılacak
+    const KATEGORI_DETAY = {
+        "Askeri": "⚔️ Askeri (Karargâh, Kışla, Tugay, Hava Üssü, Tersane, Mühimmat Deposu)",
+        "Sağlık": "🏥 Sağlık (Şehir Hastanesi, Devlet Hast., ADSM, Ecza Deposu, Tıbbi Cihaz, Lab, Rehabilitasyon)",
+        "Eğitim": "📚 Eğitim (Okul, Mesleki Eğitim, Halk Eğitim, Kütüphane, Bilim Merkezi)",
+        "Üniversite": "🎓 Üniversite (Kampüs, Fakülte, Yurt, Teknopark, Ar-Ge)",
+        "Enerji": "💧 Su/Enerji/Çevre (Baraj, HES, Arıtma, RES, GES, Trafo, Atık Tesisi)",
+        "Lojistik": "🚛 Lojistik & Ulaşım (Lojistik Köy, Liman, Havaalanı, Demiryolu, Otogar, Soğuk Hava Deposu)",
+        "Kamu": "🏢 Kamu & Sanayi (Adliye, OSB, Veri Merkezi, Spor Kompleksi, İtfaiye, Kültür Merkezi, Sınır Kapısı)"
+    };
 
-        // ---------- IndexedDB Açma / Tablo oluşturma ----------
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onerror = (e) => reject('IndexedDB açılamadı');
-                request.onsuccess = (e) => {
-                    db = e.target.result;
-                    resolve(db);
-                };
-                request.onupgradeneeded = (e) => {
-                    const dbRef = e.target.result;
-                    if (!dbRef.objectStoreNames.contains('tesisler')) {
-                        // tesisler: ilId, tesisId (otomatik), ad, kategori, aciklama
-                        const store = dbRef.createObjectStore('tesisler', { keyPath: 'id', autoIncrement: true });
-                        store.createIndex('ilId', 'ilId', { unique: false });
-                        store.createIndex('kategori', 'kategori', { unique: false });
-                    }
-                };
-            });
-        }
+    // ---------- IndexedDB Tanımı ----------
+    const DB_NAME = 'VilayetTesisDB';
+    const DB_VERSION = 2;
+    let db = null;
+    let currentFilter = 'all';
 
-        // Bir ile ait tesisleri getir
-        async function getTesislerByIl(ilId) {
-            return new Promise((resolve, reject) => {
-                if (!db) return resolve([]);
-                const tx = db.transaction('tesisler', 'readonly');
-                const store = tx.objectStore('tesisler');
-                const index = store.index('ilId');
-                const range = IDBKeyRange.only(ilId);
-                const request = index.getAll(range);
-                request.onsuccess = () => resolve(request.result || []);
-                request.onerror = () => resolve([]);
-            });
-        }
-
-        // Yeni tesis ekle
-        async function addTesis(ilId, ad, kategori, aciklama) {
-            if (!db) return false;
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction('tesisler', 'readwrite');
-                const store = tx.objectStore('tesisler');
-                const newTesis = { ilId, ad, kategori, aciklama, eklenmeTarihi: new Date().toISOString() };
-                const req = store.add(newTesis);
-                req.onsuccess = () => resolve(true);
-                req.onerror = (err) => reject(err);
-            });
-        }
-
-        // Tesis sil
-        async function deleteTesis(id) {
-            if (!db) return false;
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction('tesisler', 'readwrite');
-                const store = tx.objectStore('tesisler');
-                const req = store.delete(id);
-                req.onsuccess = () => resolve(true);
-                req.onerror = () => reject();
-            });
-        }
-
-        // ---------- Vilayet sisteminden illeri çekme (CORS proxy'siz çalışır - kaynak sitesi CORS izin veriyor mu? Deneyeceğiz) 
-        // Alternatif: Eğer CORS hatası alınırsa, cors-anywhere gibi bir servis kullanılabilir. Ama genelde rohanamedi.github.io izin veriyor.
-        async function fetchVilayetIller() {
-            const targetUrl = 'https://rohanamedi.github.io/vilayet-sistemi/';
-            try {
-                // Direkt fetch: HTML içeriğini alıp parse edeceğiz.
-                const response = await fetch(targetUrl);
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                // Sayfada "Mevcut Vilayetler" veya "İller" listesi nasıl? İnceleyince: Örnekte "🏙️ Yeni İl Ekle" altında muhtemelen daha önce eklenenleri gösteren bir liste var.
-                // En basit yol: Sayfada gözüken il isimlerini ve kodlarını çekmek için tablo veya liste elementi bulalım.
-                // Kontrol ettiğimde kaynak sayfada "İl Listesi" başlığı yok ama HTML içinde "tax-list" vb olabilir. Daha sağlam yöntem: Sayfadaki script değişkenlerini parse etmek zor.
-                // PRATİK ÇÖZÜM: Demo için varsayılan bir vilayet ve il listesi oluşturup, sayfa yüklenince kullanıcıya "manuel yenile" butonu ile gerçek veriyi çektirelim.
-                // Ancak talimat "otomatik çekecek" olduğu için: Biz direk sayfanın içindeki "il" isimlerini yakalayalım. Örnekte "il" dropdown'unda veya "Mevcut Kayıtlar" kısmında il adları olabilir.
-                // En iyisi: Sabit örnek veri + otomatik fetch denemesi, başarısız olursa örnek liste gösterilsin. Ama gerçek projede CORS vs olmayacaktır çünkü aynı github domaini değil. 
-                // Hata riskine karşı, manuel olarak bir örnek liste hazırlayıp fetch başarısızsa onu kullanacağız.
-                
-                // ---- Gerçekçi yaklaşım: Sayfadaki tablo ya da div içindeki il adlarını regex/dom ile al -
-                // Örnek olarak "Mevcut İller" bir <ul> olabilir. Ama emin değiliz. Kullanıcıya kolaylık: Aşağıdaki gibi varsayılan bir Türkiye vilayet/il listesi ile başlayalım.
-                // Bu kod profesyonel olarak şu mantıkta: Sayfadaki "il" öğelerini yakalamaya çalış, bulamazsa varsayılan demo liste döndür.
-                let iller = [];
-                // Deneme: Sayfada class="il-item" veya "il-card" ara
-                const ilElements = doc.querySelectorAll('.il-card, .il-item, [data-il]');
-                if (ilElements.length > 0) {
-                    ilElements.forEach(el => {
-                        let ilAd = el.innerText.trim().split('\n')[0];
-                        if(ilAd) iller.push({ id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36), vilayetAd: "Genel", ilAd: ilAd, ilKod: ilAd.substring(0,3).toUpperCase() });
-                    });
-                } 
-                if(iller.length === 0) {
-                    // Yedek: Sayfa içindeki "il adı" input'unun yanında örnek yoksa demo listesi döndür (Türkiye'den 10 il)
-                    iller = [
-                        { id: "il1", vilayetAd: "Marmara", ilAd: "İstanbul", ilKod: "IST" },
-                        { id: "il2", vilayetAd: "İç Anadolu", ilAd: "Ankara", ilKod: "ANK" },
-                        { id: "il3", vilayetAd: "Ege", ilAd: "İzmir", ilKod: "IZM" },
-                        { id: "il4", vilayetAd: "Akdeniz", ilAd: "Antalya", ilKod: "ANT" },
-                        { id: "il5", vilayetAd: "Karadeniz", ilAd: "Samsun", ilKod: "SAM" },
-                        { id: "il6", vilayetAd: "Güneydoğu", ilAd: "Diyarbakır", ilKod: "DIY" },
-                        { id: "il7", vilayetAd: "Doğu Anadolu", ilAd: "Erzurum", ilKod: "ERZ" },
-                        { id: "il8", vilayetAd: "Marmara", ilAd: "Bursa", ilKod: "BUR" },
-                        { id: "il9", vilayetAd: "Ege", ilAd: "Muğla", ilKod: "MUG" },
-                        { id: "il10", vilayetAd: "İç Anadolu", ilAd: "Konya", ilKod: "KON" }
-                    ];
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onerror = () => reject('DB açılamadı');
+            request.onsuccess = (e) => {
+                db = e.target.result;
+                resolve(db);
+            };
+            request.onupgradeneeded = (e) => {
+                const dbRef = e.target.result;
+                if (!dbRef.objectStoreNames.contains('tesisler')) {
+                    const store = dbRef.createObjectStore('tesisler', { keyPath: 'id', autoIncrement: true });
+                    store.createIndex('ilAdi', 'ilAdi', { unique: false });
+                    store.createIndex('kategori', 'kategori', { unique: false });
                 }
-                return iller;
-            } catch (err) {
-                console.warn("Fetch hatası, demo listesi kullanılıyor", err);
-                return [
-                    { id: "demo1", vilayetAd: "Vilayet-1", ilAd: "Merkez İl", ilKod: "MRK" },
-                    { id: "demo2", vilayetAd: "Kuzey", ilAd: "Kuzeyşehir", ilKod: "KUZ" }
-                ];
-            }
-        }
+            };
+        });
+    }
 
-        // ---------- UI Render ----------
-        async function render() {
-            if(!illerListesi.length) {
-                document.getElementById('regionContainer').innerHTML = '<div class="loading">🏙️ İl verisi yükleniyor veya henüz eklenmemiş...</div>';
-                return;
-            }
-            
-            const container = document.getElementById('regionContainer');
-            let filteredIller = illerListesi;
-            
-            // Filtreleme (kategori bazlı tesis filtresi: tüm tesisleri çekip ilde ilgili kategoriden var mı kontrol et)
-            let tesisHaritasi = new Map(); // ilId -> tesisler[]
-            for(let il of illerListesi) {
-                let tesisler = await getTesislerByIl(il.id);
-                tesisHaritasi.set(il.id, tesisler);
-            }
-            
-            if(currentFilter !== 'all') {
-                filteredIller = illerListesi.filter(il => {
-                    const tesisler = tesisHaritasi.get(il.id) || [];
-                    return tesisler.some(t => t.kategori === currentFilter);
-                });
-            }
-            
-            // istatistik
-            let toplamTesis = 0;
-            for(let il of illerListesi) {
-                toplamTesis += (tesisHaritasi.get(il.id) || []).length;
-            }
-            document.getElementById('statsPanel').innerHTML = `🏷️ ${illerListesi.length} İl | 📌 ${toplamTesis} Tesis | 🔍 Filtre: ${currentFilter === 'all' ? 'Tümü' : currentFilter}`;
-            
-            if(filteredIller.length === 0) {
-                container.innerHTML = `<div class="loading">⚠️ Seçilen kategoride tesis bulunan il yok. Yeni tesis eklemek için bir il seçin.</div>`;
-                return;
-            }
-            
-            let html = '';
-            for(let il of filteredIller) {
-                const tesisler = tesisHaritasi.get(il.id) || [];
-                const filteredTesisler = currentFilter === 'all' ? tesisler : tesisler.filter(t => t.kategori === currentFilter);
+    async function getTesisler() {
+        return new Promise((resolve) => {
+            if (!db) return resolve([]);
+            const tx = db.transaction('tesisler', 'readonly');
+            const store = tx.objectStore('tesisler');
+            const req = store.getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => resolve([]);
+        });
+    }
+
+    async function addTesis(ilAdi, vilayetAdi, tesisAdi, kategori, aciklama) {
+        if (!db) return false;
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction('tesisler', 'readwrite');
+            const store = tx.objectStore('tesisler');
+            store.add({ ilAdi, vilayetAdi, tesisAdi, kategori, aciklama, tarih: new Date().toISOString() });
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = (e) => reject(e);
+        });
+    }
+
+    async function deleteTesis(id) {
+        if (!db) return;
+        return new Promise((resolve) => {
+            const tx = db.transaction('tesisler', 'readwrite');
+            const store = tx.objectStore('tesisler');
+            store.delete(id);
+            tx.oncomplete = () => resolve(true);
+        });
+    }
+
+    // ---------- RENDER (Vilayet + İl + Tesis listesi) ----------
+    async function render() {
+        const container = document.getElementById('vilayetContainer');
+        let allTesisler = await getTesisler();
+        
+        // Filtre
+        let filteredTesisMap = new Map(); // ilAdi -> tesis listesi
+        for (let t of allTesisler) {
+            if (currentFilter !== 'all' && t.kategori !== currentFilter) continue;
+            if (!filteredTesisMap.has(t.ilAdi)) filteredTesisMap.set(t.ilAdi, []);
+            filteredTesisMap.get(t.ilAdi).push(t);
+        }
+        
+        let toplamTesisSay = allTesisler.length;
+        document.getElementById('statsPanel').innerHTML = `🏷️ 26 Vilayet | 📌 ${toplamTesisSay} Tesis | 🔍 Filtre: ${currentFilter === 'all' ? 'Tümü' : currentFilter}`;
+        
+        let html = '';
+        for (let vil of VILAYET_LISTESI) {
+            html += `<div class="vilayet-card"><div class="vilayet-title">📌 ${vil.ad}</div><div class="il-listesi">`;
+            for (let il of vil.iller) {
+                const tesislerBuIl = filteredTesisMap.get(il) || [];
                 html += `
-                    <div class="card" data-il-id="${il.id}">
-                        <div class="card-header">
-                            <h3>🏙️ ${il.ilAd} <span style="font-size:0.7rem;">(${il.vilayetAd})</span></h3>
-                            <span class="badge-code">${il.ilKod || '---'}</span>
-                        </div>
-                        <div class="card-body">
-                            <ul class="facility-list" id="list-${il.id}">
-                                ${filteredTesisler.map(t => `
-                                    <li class="facility-item" style="border-left-color: ${getCatColor(t.kategori)}">
-                                        <span class="facility-cat">${t.kategori}</span>
-                                        <strong>${escapeHtml(t.ad)}</strong><br>
-                                        <small>${escapeHtml(t.aciklama || '')}</small>
-                                        <button class="small" data-tesis-id="${t.id}" data-il-id="${il.id}" onclick="window.delTesis(${t.id}, '${il.id}')">🗑️ Sil</button>
-                                    </li>
-                                `).join('')}
-                                ${filteredTesisler.length === 0 ? '<div class="empty-msg">📭 Bu kategoride tesis yok. Eklemek için formu kullanın.</div>' : ''}
-                            </ul>
-                            <div class="add-facility">
-                                <input type="text" id="tesisAd-${il.id}" placeholder="Tesis adı (Ör: 5. Zırhlı Tugay, Selçuk Ecza Deposu...)" />
-                                <select id="tesisKat-${il.id}">
-                                    <option value="Askeri">⚔️ Askeri (Kışla/Karakol/Tugay)</option>
-                                    <option value="Sağlık">🏥 Sağlık (Hastane/Eczane Deposu)</option>
-                                    <option value="Eğitim">📚 Eğitim (Okul)</option>
-                                    <option value="Üniversite">🎓 Üniversite</option>
-                                    <option value="Lojistik Altyapı">⚡ Baraj/Elektrik/Arıtma</option>
-                                </select>
-                                <textarea id="tesisAciklama-${il.id}" rows="1" placeholder="Açıklama (konum, kapasite vs.)"></textarea>
-                                <button data-il-id="${il.id}" class="add-tesis-btn">➕ Tesis Ekle</button>
-                            </div>
+                    <div class="il-card">
+                        <div class="il-header">🏙️ ${il}</div>
+                        <ul class="tesis-list" id="list-${normalizeId(il)}">
+                            ${tesislerBuIl.map(t => `
+                                <li class="tesis-item" style="border-left-color: ${getRenk(t.kategori)}">
+                                    <span class="cat-badge">${t.kategori}</span>
+                                    <strong>${escapeHtml(t.tesisAdi)}</strong><br>
+                                    <small>${escapeHtml(t.aciklama || '')}</small>
+                                    <button class="small-danger" data-id="${t.id}" data-il="${il}" onclick="window.silTesis(${t.id}, '${il}')">🗑️ Sil</button>
+                                </li>
+                            `).join('')}
+                            ${tesislerBuIl.length === 0 ? '<div class="empty-msg">📭 Bu kategoride tesis yok.</div>' : ''}
+                        </ul>
+                        <div class="add-form">
+                            <input type="text" id="ad-${normalizeId(il)}" placeholder="Tesis adı (Örn: Şehir Hastanesi, 2. Zırhlı Tugay...)" />
+                            <select id="kat-${normalizeId(il)}">
+                                ${KATEGORI_LISTESI.map(k => `<option value="${k}">${KATEGORI_DETAY[k]}</option>`).join('')}
+                            </select>
+                            <textarea id="aciklama-${normalizeId(il)}" rows="1" placeholder="Açıklama (kapasite, adres vb.)"></textarea>
+                            <button data-il="${il}" data-vil="${vil.ad}" class="ekleButon">➕ Tesis Ekle</button>
                         </div>
                     </div>
                 `;
             }
-            container.innerHTML = html;
-            
-            // event listeners for add buttons
-            document.querySelectorAll('.add-tesis-btn').forEach(btn => {
-                btn.removeEventListener('click', addHandler);
-                btn.addEventListener('click', addHandler);
-            });
+            html += `</div></div>`;
         }
+        container.innerHTML = html;
         
-        function addHandler(e) {
-            const ilId = e.currentTarget.getAttribute('data-il-id');
-            const adInput = document.getElementById(`tesisAd-${ilId}`);
-            const katSelect = document.getElementById(`tesisKat-${ilId}`);
-            const aciklamaArea = document.getElementById(`tesisAciklama-${ilId}`);
-            const ad = adInput.value.trim();
-            const kategori = katSelect.value;
-            const aciklama = aciklamaArea.value.trim();
-            if(!ad) { alert("Lütfen tesis adı girin"); return; }
-            addTesis(ilId, ad, kategori, aciklama).then(() => {
-                adInput.value = '';
-                aciklamaArea.value = '';
-                render();
-            }).catch(err => alert("Ekleme hatası"));
+        // butonlara event ekle
+        document.querySelectorAll('.ekleButon').forEach(btn => {
+            btn.removeEventListener('click', ekleHandler);
+            btn.addEventListener('click', ekleHandler);
+        });
+    }
+    
+    function normalizeId(str) {
+        return str.replace(/\s/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+    }
+    
+    async function ekleHandler(e) {
+        const ilAdi = e.currentTarget.getAttribute('data-il');
+        const vilayetAdi = e.currentTarget.getAttribute('data-vil');
+        const adInput = document.getElementById(`ad-${normalizeId(ilAdi)}`);
+        const katSelect = document.getElementById(`kat-${normalizeId(ilAdi)}`);
+        const aciklamaArea = document.getElementById(`aciklama-${normalizeId(ilAdi)}`);
+        const tesisAdi = adInput.value.trim();
+        const kategori = katSelect.value;
+        const aciklama = aciklamaArea.value.trim();
+        if (!tesisAdi) { alert("Tesis adı giriniz"); return; }
+        await addTesis(ilAdi, vilayetAdi, tesisAdi, kategori, aciklama);
+        adInput.value = '';
+        aciklamaArea.value = '';
+        render();
+    }
+    
+    window.silTesis = async (id, ilAdi) => {
+        if(confirm("Tesis silinsin mi?")) {
+            await deleteTesis(id);
+            render();
         }
-        
-        window.delTesis = async (tesisId, ilId) => {
-            if(confirm("Tesis silinsin mi?")) {
-                await deleteTesis(tesisId);
-                render();
-            }
-        };
-        
-        function getCatColor(cat) {
-            switch(cat) {
-                case 'Askeri': return '#b91c1c';
-                case 'Sağlık': return '#0e7c7c';
-                case 'Eğitim': return '#2b6e9e';
-                case 'Üniversite': return '#6b21a5';
-                default: return '#e68a2e';
-            }
-        }
-        
-        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-        
-        // init
-        async function init() {
-            await openDB();
-            // fetch iller
-            const iller = await fetchVilayetIller();
-            illerListesi = iller.map(il => ({ ...il, id: il.id || crypto.randomUUID?.() || Math.random().toString(36) }));
-            await render();
-        }
-        
-        // filter listeners
+    };
+    
+    function getRenk(kat) {
+        const renkler = { Askeri:"#b22222", Sağlık:"#2e8b57", Eğitim:"#4682b4", Üniversite:"#8a2be2", Enerji:"#ff8c00", Lojistik:"#2f6f6f", Kamu:"#6a5acd" };
+        return renkler[kat] || "#999";
+    }
+    
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    
+    // filtre butonları
+    function initFilters() {
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentFilter = btn.getAttribute('data-cat');
                 render();
             });
         });
-        
-        init();
-    })();
+    }
+    
+    async function start() {
+        await openDB();
+        initFilters();
+        render();
+    }
+    start();
 </script>
 </body>
 </html>
